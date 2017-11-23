@@ -56,16 +56,16 @@ exprBis s = try
     do
         char '-'
         t <- term
-        e <- exprBis t
-        return (Minus s t)
+        e <- exprBis (Minus s t)
+        return e
     )
     <|>
     try(
     do
         char '+'
         t <- term
-        e <- exprBis t
-        return (Add s e)
+        e <- exprBis (Add s t)
+        return e
     )
     <|>
     try(
@@ -87,16 +87,16 @@ termBis v = try
     do
         char '*'
         u <- unit
-        t <- termBis u
-        return (Mult v t)
+        t <- termBis (Mult v u)
+        return t
     )
     <|>
     try(
     do
         char '/'
         u <- unit
-        t <- termBis u
-        return (Div v t)
+        t <- termBis (Div v u)
+        return t
     )
     <|>
     try(
