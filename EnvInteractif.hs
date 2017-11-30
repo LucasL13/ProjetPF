@@ -3,7 +3,7 @@ import ParserLL
 --data StoreElement = MyInt (String,Int) | MyFloat (String, Float)  deriving (Show)
 data StoreElement = StoreElement {
     var :: String,
-    value :: Float
+    value :: Double
     }
     
 type Store = [StoreElement]
@@ -55,7 +55,7 @@ handleSet _ xs = return xs
 
 deleteVar :: String -> Store -> Store
 --deleteVar v ((MyInt(s,n)):xs) = if (v == s) then (deleteVar v xs) else ((MyInt(s,n)):(deleteVar v xs))
---deleteVar v ((MyFloat(s,n)):xs) = if (v == s) then (deleteVar v xs) else ((MyFloat(s,n)):(deleteVar v xs))
+--deleteVar v ((MyFloat(s,n)):xs) = if (v == s) then (deleteVar v xs) else ((MyFloat (s,n)):(deleteVar v xs))
 --deleteVar _ [] = [] 
 deleteVar v (x:xs) = if (v == (var x)) then (deleteVar v xs) else (x:(deleteVar v xs))
 deleteVar _ [] = []
@@ -110,8 +110,29 @@ mainLoop =
         if(cmd == True) then faireCommande(parseCommand xs)
         else do
             faireExpr xs
-            mainLoop
+            mainLoop        
+        return ()
         
-        return ()    
-    
+-- let args = parseCommand
 
+
+   
+
+-- getCommand :: Int -> Maybe Command
+-- getCommand -1 = Nothing
+-- getCommand x = Just (commands !! x)
+--
+-- stringify :: Maybe Command -> String
+-- stringify (Just x) = description x
+-- stringify Nothing = "commande inconnu, tapez :help ou :h pour obtenir la liste des commandes"
+
+--chooseCommand au lieu de testPat
+testPat :: String -> Int 
+testPat ":q" = 0
+testPat ":quit" = 0
+testPat ":help" = 1
+testPat ":h" = 1
+testPat ":store" = 2
+testPat ":set" = 3
+testPat "unset" = 4
+testPat _ = -1
