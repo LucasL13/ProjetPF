@@ -1,3 +1,5 @@
+import ParserLL
+
 --data StoreElement = MyInt (String,Int) | MyFloat (String, Float)  deriving (Show)
 data StoreElement = StoreElement {
     var :: String,
@@ -90,19 +92,26 @@ isCommand :: String -> Bool
 isCommand (x:xs) = (x == ':')
 isCommand [] = False
 
-main = do
-    putStrLn "Hello, what's your name"
-    name <- getLine
-    putStrLn ("Hey " ++ name ++ ", you rock")
+faireCommande xs = do
+    putStrLn("salut")
 
+parseCommand xs = do
+    putStrLn("lel")
 
-mainLoop :: Bool -> IO ()
-mainLoop x = if x == True then
+faireExpr xs = do
+    putStrLn( "> \ESC[34m\STX" ++ xs ++ " = '\ESC[37m\STX' " ++ show (test (xs++""))   )
+
+mainLoop :: IO ()
+mainLoop = 
     do
         putStr "> "
         xs <- getLine
-        putStrLn (xs)
-        mainLoop x
-    else
-        return ()
+        let cmd = isCommand xs
+        if(cmd == True) then faireCommande(parseCommand xs)
+        else do
+            faireExpr xs
+            mainLoop
+        
+        return ()    
     
+

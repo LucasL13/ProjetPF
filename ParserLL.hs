@@ -1,7 +1,8 @@
+module ParserLL(ExprType(..), mangeEspace, mangeEspaceFonc, test, expr, exprBis, term, termBis, unit) where
+
 import Text.Parsec
 import Text.Parsec.String (Parser)
 import Data.Either
-
 
 --    E → T E’
 --    E’→ -T E' | +T E’ | ε
