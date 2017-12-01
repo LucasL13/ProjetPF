@@ -2,17 +2,17 @@ import ParserLL
 import Data.Maybe
 
 
--- Type Store => Déplacer dans un autre fichier
+-- Type Store => appartient à Expression.hs
 
-data StoreElement = StoreElement {
-    var :: String,
+data Variable = Variable {
+    varName :: String,
     value :: Double
     }
     
-type Store = [StoreElement]
+type Store = [Variable]
 
 store :: Store
-store = [StoreElement {var = "var1", value = 1}, StoreElement {var = "var2", value = -6}, StoreElement {var = "var3", value = 1.5}]
+store = [Variable {varName = "var1", value = 1}, Variable {varName = "var2", value = -6}, Variable {varName = "var3", value = 1.5}]
 
 
 -------------------   Handlers     -----------------------------
@@ -30,13 +30,13 @@ handleQuit _ s = return s
 
 -- Construit une chaine de caractère permettant d'afficher le contenu d'un Store
 storeToString :: Store -> String
-storeToString (x:xs) = ((var x) ++ " = " ++ (show (value x)) ++ "\n") ++ storeToString xs
+storeToString (x:xs) = ((varName x) ++ " = " ++ (show (value x)) ++ "\n") ++ storeToString xs
 storeToString [] = ""
 
 -- Handler de la commande :store
 handleStore :: Handler
 handleStore _ s = do
-    putStr (storeToString s)
+    putStr ("Contenu du store courant :\n" ++ storeToString s)
     return s
     
 ------------------------------
@@ -56,12 +56,12 @@ handleHelp _ s = do
 -- Renvoi True si la variable x est présente dans le Store, False sinon
 isPresent :: String -> Store -> Bool
 isPresent _ [] = False
-isPresent x (y:ys) = if (x == (var y)) then True else (isPresent x ys)
+isPresent x (y:ys) = if (x == (varName y)) then True else (isPresent x ys)
 
 -- Ajoute la variable x de valeur y au Store zs, si la variable était déjà présente sa valeur sera mise à jour
 -- x :: String, y :: Double, zs :: Store
 addVar :: String -> Double -> Store -> Store
-addVar x y zs = if (isPresent x zs) then ((StoreElement { var = x, value = y}):(deleteVar x zs)) else ((StoreElement { var = x, value = y}):zs)
+addVar x y zs = if (isPresent x zs) then ((Variable { varName = x, value = y}):(deleteVar x zs)) else ((Variable { varName = x, value = y}):zs)
 
 -- Handler de la commande :set
 handleSet :: Handler
@@ -72,7 +72,7 @@ handleSet _ xs = return xs
 
 -- Supprime la variable v du Store
 deleteVar :: String -> Store -> Store
-deleteVar v (x:xs) = if (v == (var x)) then (deleteVar v xs) else (x:(deleteVar v xs))
+deleteVar v (x:xs) = if (v == (varName x)) then (deleteVar v xs) else (x:(deleteVar v xs))
 deleteVar _ [] = []
 
 -- Handler de la commande :unset
@@ -90,12 +90,6 @@ data Command = Command {
     exits :: Bool,
     run :: Handler
     }
-    
--- q ou quit : on sort du programme
--- h ou help : on affiche la liste des commandes existants avec des explications
--- store : on affiche le contenu du store
--- set x a , ou a est un nombre : ajoute la variable x, avec la valeur a au store
--- unset x : on enleve x du store courant
 
 -- Déclaration de la liste des commandes du programme
 commands :: [Command]
@@ -112,45 +106,12 @@ isCommand :: String -> Bool
 isCommand (x:xs) = (x == ':')
 isCommand [] = False
 
-faireCommande xs = do
-    putStrLn("salut")
-
 parseCommand :: String -> [String]
 parseCommand x = [x]
-parseCommand _ = []
---parseCommand xs = do
-   -- putStrLn("lel")
 
 faireExpr xs = do
     putStrLn( "> \ESC[34m\STX" ++ xs ++ " = '\ESC[37m\STX' " ++ show (test (xs++""))   )
 
--- afficher "type :help to see the list of commands"
-
-
-storeMainLoop :: Store -> IO ()
-storeMainLoop ss = 
-    do
-        putStr "> "
-        xs <- getLine
-        let testCommand = isCommand xs
-        if(testCommand == True) then
-            do
-            let args = parseCommand xs
-            let mcmd = checkCommand (chooseCommand (args))
-            if (isJust mcmd) then          
-                let cmd = fromJust mcmd in -- ici cmd est une commande valide
-                    do
-                    storeTest <- run cmd args ss
-                    if((exits cmd) == False) then storeMainLoop storeTest else
-                        return ()
-            else
-                do
-                putStrLn ("Commande non reconnu, tapez :help ou :h pour obtenir la liste des commandes")
-                storeMainLoop ss
-        else do
-            putStrLn xs
-            storeMainLoop  ss      
-        return ()
 
 -- Lance la boucle principale avec un store vide
 main = mainLoop []
@@ -164,11 +125,11 @@ mainLoop ss =
         if(testCommand == True) then
             do
             let args = parseCommand xs
-            let mcmd = checkCommand (chooseCommand (args))
+            let mcmd = getCommand (chooseCommand (args))
             if (isJust mcmd) then          
                 let cmd = fromJust mcmd in -- ici cmd est une commande valide
                     do
-                    storeTest <- run cmd args []
+                    storeTest <- run cmd args ss
                     if((exits cmd) == False) then mainLoop storeTest else
                         return ()
             else
@@ -180,17 +141,11 @@ mainLoop ss =
             mainLoop ss      
         return ()
         
--- let args = parseCommand
-
--- Vérifie si la commande est valide
-checkCommand :: Int -> Maybe Command
-checkCommand (-1) = Nothing
-checkCommand x = Just (commands !! x)
 
 -- Récupère peut-être une commande basé sur un indice de position
---getCommand ::  Int -> Maybe Command
---getCommand -1 = Nothing
---getCommand x = Just (commands !! x)
+getCommand ::  Int -> Maybe Command
+getCommand (-1) = Nothing
+getCommand x = Just (commands !! x)
 
 stringify :: Maybe Command -> String
 stringify (Just x) = description x
@@ -208,7 +163,7 @@ chooseCommand (":set":_) = 3
 chooseCommand (":unset":_) = 4
 chooseCommand (_:_) = -1
 
--- Vérification string message error
+-- Vérification string message error -- Pas utilisé
 verifyCommand :: [String] -> Maybe String
 verifyCommand (":q":[]) = Nothing
 verifyCommand (":q":xs) = Just "Trop d'arguments"
