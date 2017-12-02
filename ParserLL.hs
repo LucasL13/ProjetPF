@@ -10,7 +10,7 @@ import Data.Either
 --    T → U T’
 --    T’→ *U T’ | /U T' | ε
 
---    U → - id | - (E) | (E) | id
+--    U → - id | - var | - (E) | (E) | id | var
 
 
 -- Parse l'entrée pour match le pattern : 
@@ -53,6 +53,7 @@ data ExprType = Source ExprType ExprType |
                 Term ExprType | 
                 Unit ExprType |
                 Negative ExprType |
+                Variable String |
                 Number Double deriving Show
 
 eval (Add a b) = eval a + eval b
@@ -63,7 +64,8 @@ eval (Unit a) = eval a
 eval (Mult a b) = (eval a) * (eval b)
 eval (Div a b ) = (eval a) / (eval b)
 eval (Negative a) = -1 * (eval a)
-                
+eval (Variable a) = 4
+-- eval (Variable a) = evalExpr (getStoreFromName a)                
 
 
 expr :: Parser ExprType
@@ -143,6 +145,14 @@ unit = try
     try(
         do
             char '-'
+            x <- letter
+            y <- many letter
+            return  (Negative (Variable ([x]++y)))
+    )
+    <|>
+    try(
+        do
+            char '-'
             x <- digit
             y <- many digit
             return  (Negative (Number (read (x:y)::Double)))
@@ -168,10 +178,17 @@ unit = try
     )
     <|>
     try(
+    do
+        x <- digit
+        y <- many digit
+        return (Number (read (x:y)::Double))
+    )
+    <|>
+    try(
         do
-            x <- digit
-            y <- many digit
-            return (Number (read (x:y)::Double))
+            x <- letter
+            y <- many letter
+            return (Variable ([x]++y))
     )
     <|>
     try(
