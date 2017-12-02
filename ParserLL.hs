@@ -1,4 +1,4 @@
-module ParserLL(ExprType(..), mangeEspace, mangeEspaceFonc, test, expr, exprBis, term, termBis, unit) where
+module ParserLL(ExprType(..), mangeEspace, mangeEspaceFonc, evalExpr, expr, exprBis, term, termBis, unit) where
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
@@ -12,15 +12,37 @@ import Data.Either
 
 --    U → - id | - (E) | (E) | id
 
+
+-- Parse l'entrée pour match le pattern : 
+-- ":command variable value"
+-- Retourné sous forme d'un tableau de String [command, variable, value]
+commandParserFunc :: Parser [String]
+commandParserFunc =
+    do 
+        char ':'
+        a <- letter
+        b <- many letter
+        char ' '
+        c <- letter
+        d <- many letter
+        char ' '
+        e <- anyChar
+        f <- many anyChar
+        return ([[a]++b, [c]++d, [e]++f])  
+
+-- Fonction pour appeller la fonction précedente avec une simple string à parser
+commandParser str =  head (rights ((parse commandParserFunc "" str):[])) 
+
+
 mangeEspaceFonc :: Parser String
-mangeEspaceFonc = 
-	do
+mangeEspaceFonc =   do
 		spaces
 		sepEndBy (anyChar) spaces
 
 mangeEspace str = head (rights ((parse mangeEspaceFonc "" str):[])) 
 
-test str =  eval (head (rights ((parse expr "" (mangeEspace str)):[])))
+-- Permet d'evaluer une String en entrée (str) si cette derniere est conforme à la syntaxe 
+evalExpr str =  eval (head (rights ((parse expr "" (mangeEspace str)):[])))
 
 
 data ExprType = Source ExprType ExprType |
