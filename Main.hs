@@ -1,0 +1,3 @@
+--import EnvInteractif
+
+main = mainLoop []

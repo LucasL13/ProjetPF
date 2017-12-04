@@ -1,6 +1,5 @@
-import ParserLL
+--import ParserLL
 import Data.Maybe
-
 
 -- Type Store => appartient à Expression.hs
 
@@ -10,10 +9,6 @@ data Variable = Variable {
     }
     
 type Store = [Variable]
-
-store :: Store
-store = [Variable {varName = "var1", value = 1}, Variable {varName = "var2", value = -6}, Variable {varName = "var3", value = 1.5}]
-
 
 -------------------   Handlers     -----------------------------
 
@@ -106,11 +101,12 @@ isCommand :: String -> Bool
 isCommand (x:xs) = (x == ':')
 isCommand [] = False
 
-parseCommand :: String -> [String]
-parseCommand x = [x]
+-- Découpe la commande en arguments ( utilisation de la fonction words)
+getArgs :: String -> [String]
+getArgs xs = words xs
 
-faireExpr xs = do
-    putStrLn( "> \ESC[34m\STX" ++ xs ++ " = '\ESC[37m\STX' " ++ show (test (xs++""))   )
+--faireExpr xs = do
+--    putStrLn( "> \ESC[34m\STX" ++ xs ++ " = '\ESC[37m\STX' " ++ show (test (xs++""))   )
 
 
 -- Lance la boucle principale avec un store vide
@@ -124,7 +120,7 @@ mainLoop ss =
         let testCommand = isCommand xs
         if(testCommand == True) then
             do
-            let args = parseCommand xs
+            let args = getArgs xs
             let mcmd = getCommand (chooseCommand (args))
             if (isJust mcmd) then          
                 let cmd = fromJust mcmd in -- ici cmd est une commande valide
@@ -137,7 +133,7 @@ mainLoop ss =
                 putStrLn ("Commande non reconnu, tapez :help ou :h pour obtenir la liste des commandes")
                 mainLoop ss
         else do
-            putStrLn xs
+            putStrLn xs -- if(isJust parseExpression) then (if(isJust eval) then show else putStr Cant eval) else putStr (not a valid expression)
             mainLoop ss      
         return ()
         
