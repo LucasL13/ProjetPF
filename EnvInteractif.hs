@@ -1,14 +1,8 @@
---import ParserLL
+module EnvInteractif(mainLoop) where
+
+import Expression
+import Parser
 import Data.Maybe
-
--- Type Store => appartient à Expression.hs
-
-data Variable = Variable {
-    varName :: String,
-    value :: Double
-    }
-    
-type Store = [Variable]
 
 -------------------   Handlers     -----------------------------
 
@@ -23,15 +17,10 @@ handleQuit _ s = return s
 
 ---------------------------
 
--- Construit une chaine de caractère permettant d'afficher le contenu d'un Store
-storeToString :: Store -> String
-storeToString (x:xs) = ((varName x) ++ " = " ++ (show (value x)) ++ "\n") ++ storeToString xs
-storeToString [] = ""
-
 -- Handler de la commande :store
 handleStore :: Handler
 handleStore _ s = do
-    putStr ("Contenu du store courant :\n" ++ storeToString s)
+    putStr ("Contenu du store courant :\n\n" ++ storeToString s)
     return s
     
 ------------------------------
@@ -48,15 +37,6 @@ handleHelp _ s = do
     return s
     
 ---------------
--- Renvoi True si la variable x est présente dans le Store, False sinon
-isPresent :: String -> Store -> Bool
-isPresent _ [] = False
-isPresent x (y:ys) = if (x == (varName y)) then True else (isPresent x ys)
-
--- Ajoute la variable x de valeur y au Store zs, si la variable était déjà présente sa valeur sera mise à jour
--- x :: String, y :: Double, zs :: Store
-addVar :: String -> Double -> Store -> Store
-addVar x y zs = if (isPresent x zs) then ((Variable { varName = x, value = y}):(deleteVar x zs)) else ((Variable { varName = x, value = y}):zs)
 
 -- Handler de la commande :set
 handleSet :: Handler
@@ -64,11 +44,6 @@ handleSet (_:x:y:_) xs = return (addVar x (read y) xs)
 handleSet _ xs = return xs
 
 -----------------------------------------------------                     
-
--- Supprime la variable v du Store
-deleteVar :: String -> Store -> Store
-deleteVar v (x:xs) = if (v == (varName x)) then (deleteVar v xs) else (x:(deleteVar v xs))
-deleteVar _ [] = []
 
 -- Handler de la commande :unset
 handleUnset :: Handler
@@ -101,16 +76,28 @@ isCommand :: String -> Bool
 isCommand (x:xs) = (x == ':')
 isCommand [] = False
 
+-- Récupère peut-être une commande basé sur un indice de position
+getCommand ::  Int -> Maybe Command
+getCommand (-1) = Nothing
+getCommand x = Just (commands !! x)
+
+-- Renvoi l'indice d'une commande dans la liste commands, ou -1 si la commande n'est pas reconnu
+-- Vérification "stricte" des arguments, e.g pas d'arguments superflus
+chooseCommand :: [String] -> Int 
+chooseCommand (":q":[]) = 0
+chooseCommand (":quit":[]) = 0
+chooseCommand (":help":[]) = 1
+chooseCommand (":h":[]) = 1
+chooseCommand (":store":[]) = 2
+chooseCommand (":set":_:_:[]) = 3
+chooseCommand (":unset":_:[]) = 4
+chooseCommand (_:_) = -1
+
 -- Découpe la commande en arguments ( utilisation de la fonction words)
 getArgs :: String -> [String]
 getArgs xs = words xs
 
---faireExpr xs = do
---    putStrLn( "> \ESC[34m\STX" ++ xs ++ " = '\ESC[37m\STX' " ++ show (test (xs++""))   )
-
-
--- Lance la boucle principale avec un store vide
-main = mainLoop []
+-- Boucle principale
 
 mainLoop :: Store -> IO ()
 mainLoop ss = 
@@ -133,33 +120,16 @@ mainLoop ss =
                 putStrLn ("Commande non reconnu, tapez :help ou :h pour obtenir la liste des commandes")
                 mainLoop ss
         else do
-            putStrLn xs -- if(isJust parseExpression) then (if(isJust eval) then show else putStr Cant eval) else putStr (not a valid expression)
+            let mexpr = parseExpression xs in
+                if(isJust mexpr) then
+                    let mres = eval ss (fromJust mexpr) in
+                       if(isJust mres) then putStrLn(show (fromJust mres)) else putStrLn("Error, cannot evaluate expression")
+                else putStrLn("Error syntax") 
             mainLoop ss      
-        return ()
-        
+        return ()    
 
--- Récupère peut-être une commande basé sur un indice de position
-getCommand ::  Int -> Maybe Command
-getCommand (-1) = Nothing
-getCommand x = Just (commands !! x)
 
-stringify :: Maybe Command -> String
-stringify (Just x) = description x
-stringify Nothing = "commande inconnu, tapez :help ou :h pour obtenir la liste des commandes"
-
--- Renvoi l'indice d'une commande dans la liste commands, ou -1 si la commande n'est pas reconnu
--- Pas de vérification
-chooseCommand :: [String] -> Int 
-chooseCommand (":q":_) = 0
-chooseCommand (":quit":_) = 0
-chooseCommand (":help":_) = 1
-chooseCommand (":h":_) = 1
-chooseCommand (":store":_) = 2
-chooseCommand (":set":_) = 3
-chooseCommand (":unset":_) = 4
-chooseCommand (_:_) = -1
-
--- Vérification string message error -- Pas utilisé
+-- Vérification string message error -- Pas utilisé/Inutilisable
 verifyCommand :: [String] -> Maybe String
 verifyCommand (":q":[]) = Nothing
 verifyCommand (":q":xs) = Just "Trop d'arguments"
