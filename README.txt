@@ -3,26 +3,31 @@ LOIGNON Lucas
 
 I Objectif du projet
 
+	L'objectif de ce projet est d'implémenter un mini environnement interactif, à la manière de ghci, permettant dans un premier temps d'évaluer des expressions numériques simples.
+Pour cela nous avons implémenté :
+ - le module Parser, dont la fonction parseExpression effectue une analyse syntaxique d'une chaine de caractère et qui construit un objet de type Maybe Expression
+ - le module Expression qui fournit la fonction 'eval' qui prends un objet de type Expression et renvoie Maybe Double
+ - le module EnvInteractif qui utilise les fonctions principales des deux modules précédents pour créer l'environnement interactif
+ 
 II Travail accompli
 
+	Partie I :
+		Parser.hs				|	90% fini, léger problème dans l'analyse syntaxique
+		Expression.hs			|	100% fini
+		EnvInteractif.hs		|	100% fini
+		ParserTest.hs			|	Tests unitaires (27)
+		ExpressionTest.hs		|	Test unitaires (15)
+		EnvInteractifTest.hs	|	Pas de test unitaires, validité des fonctions prouvée
+		
+	Partie II :
+		Ajout de l'opérateur binaire de division '/'
+
 III Sources
-	http://learnyouahaskell.com/chapters
+
+	Ressources disponibles sur internet qui nous ont été utiles pour ce projet : 
+
+		* http://learnyouahaskell.com/chapters  		Utile en complément du cours
+		* https://en.wikipedia.org/wiki/Left_recursion 	Aide pour former une grammaire et l'analyse syntaxique
+		* https://hackage.haskell.org/ 					Pour la documentation
+	
 IV Observations
-
-
-
-// WORK :
-
-A voir / a faire :
-- J'ai rajouté le parsing de commande. Tu peux utiliser la fonction commandParser
-			utilisation : commandParser ":set variableA 4+5*(2/4)"
-			sortie 			: ["set", "variableA", "4+5*(2/4)"] (tu notera que je retourne pas le ":" devant la commande)
-	Et si apres on fait
-			-> let x = commandParser ":set variableA 4+5*(2/4)"
-			-> evalExpr (last x) ça evalue bien à 6.5
-
-- J'ai rajouté le "-var" / "var" dans la syntaxe. Ca marche nickel d'un point de vue pratique mais j'ai pas encore fais la vraie evaluation.
-  Jette un oeil a la ligne 68 de ParserLL. Je pense que c'est un truc comme ça qu'il faut faire mais on verra ensemble si c'est possible
-
-
-- Demain si de ton coté ça marche pas mal, je rajouterai le "maybe" de partout dans ParserLL

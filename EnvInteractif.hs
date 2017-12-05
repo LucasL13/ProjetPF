@@ -34,7 +34,7 @@ isCommand :: String -> Bool
 isCommand (x:xs) = (x == ':')
 isCommand [] = False
 
--- Récupère peut-être une commande basé sur un indice de position
+-- Récupère peut-être une commande basé sur un indice de position obtenu avec la fonction chooseCommand
 getCommand ::  Int -> Maybe Command
 getCommand (-1) = Nothing
 getCommand x = Just (commands !! x) -- ici x forcément valide car on suppose x obtenu avc chooseCommand

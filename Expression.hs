@@ -51,13 +51,14 @@ addVar x y zs = if (isPresent x zs) then ((Variable { varName = x, value = y}):(
 data Expression = Source Expression Expression |
                 Add Expression Expression | 
                 Minus Expression Expression |
-                Mult Expression Expression | 
+                Mult Expression Expression |
+                Div Expression Expression |
                 Exp Expression Expression |
                 Term Expression | 
                 Unit Expression |
                 Negative Expression |
                 IdVar String |
-                Number Double deriving Show
+                Number Double deriving (Show, Eq)
 
 -- Fonction d'évaluation d'une expression, en fonction d'un Store
 eval :: Store -> Expression -> Maybe Double
@@ -77,5 +78,7 @@ eval ss (Mult x y) = let mx = eval ss x
 eval ss (Exp x y) = let mx = eval ss x
                         my = eval ss y in
                     if ((isJust mx) && (isJust my)) then Just ((fromJust mx) ** (fromJust my)) else Nothing -- On manipule des Double donc on utilise l'operateur '**' pour l'exponentiation
---manque exponentiation
+eval ss (Div x y) = let mx = eval ss x
+                        my = eval ss y in
+                    if ((isJust mx) && (isJust my)) then Just ((fromJust mx) / (fromJust my)) else Nothing
                     

@@ -89,6 +89,14 @@ termBis v = try
     <|>
     try(
     do
+        char '/'
+        u <- unit
+        t <- termBis (Div v u)
+        return t
+    )
+    <|>
+    try(
+    do
         char '^'
         u <- unit
         t <- termBis (Exp v u)
