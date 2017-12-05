@@ -77,5 +77,4 @@ eval ss (Mult x y) = let mx = eval ss x
 eval ss (Exp x y) = let mx = eval ss x
                         my = eval ss y in
                     if ((isJust mx) && (isJust my)) then Just ((fromJust mx) ** (fromJust my)) else Nothing -- On manipule des Double donc on utilise l'operateur '**' pour l'exponentiation
---manque exponentiation
                     
