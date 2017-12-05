@@ -37,7 +37,7 @@ isCommand [] = False
 -- Récupère peut-être une commande basé sur un indice de position
 getCommand ::  Int -> Maybe Command
 getCommand (-1) = Nothing
-getCommand x = Just (commands !! x)
+getCommand x = Just (commands !! x) -- ici x forcément valide car on suppose x obtenu avc chooseCommand
 
 -- Renvoi l'indice d'une commande dans la liste commands, ou -1 si la commande n'est pas reconnu
 -- Vérification "stricte" des arguments, e.g pas d'arguments superflus
@@ -99,33 +99,33 @@ handleUnset _ s = return s
 -- Boucle principale
 
 mainLoop :: Store -> IO ()
-mainLoop ss = 
-    do
-        putStr "> "
-        xs <- getLine
-        let testCommand = isCommand xs
-        if(testCommand == True) then
-            do
-            let args = getArgs xs
-            let mcmd = getCommand (chooseCommand (args))
-            if (isJust mcmd) then          
-                let cmd = fromJust mcmd in -- ici cmd est une commande valide
-                    do
-                    storeTest <- run cmd args ss
-                    if((exits cmd) == False) then mainLoop storeTest else
-                        return ()
-            else
-                do
-                putStrLn ("Commande non reconnu, tapez :help ou :h pour obtenir la liste des commandes")
-                mainLoop ss
-        else do
-            let mexpr = parseExpression xs in
-                if(isJust mexpr) then
-                    let mres = eval ss (fromJust mexpr) in
-                       if(isJust mres) then putStrLn(show (fromJust mres)) else putStrLn("Error, cannot evaluate expression")
-                else putStrLn("Error syntax") 
-            mainLoop ss      
-        return ()    
+mainLoop ss = do
+  putStr "> "
+  xs <- getLine
+  if(xs == "") then mainLoop ss else do
+    let testCommand = isCommand xs
+    if(testCommand == True) then
+      do
+      let args = getArgs xs
+      let mcmd = getCommand (chooseCommand (args))
+      if (isJust mcmd) then          
+        let cmd = fromJust mcmd in -- ici cmd est une commande valide
+          do
+          storeTest <- run cmd args ss
+          if((exits cmd) == False) then mainLoop storeTest else
+            return ()
+      else
+        do
+        putStrLn ("Commande non reconnu, tapez :help ou :h pour obtenir la liste des commandes")
+        mainLoop ss
+    else do
+      let mexpr = parseExpression xs in
+        if(isJust mexpr) then
+          let mres = eval ss (fromJust mexpr) in
+            if(isJust mres) then putStrLn(show (fromJust mres)) else putStrLn("Error, cannot evaluate expression, :store to check the store")
+        else putStrLn("Error syntax") 
+      mainLoop ss      
+      return ()    
 
 
 -- Vérification string message error -- Pas utilisé/Inutilisable
